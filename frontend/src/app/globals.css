@@ -1,15 +1,21 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-:root {
-  --phosphor-green: #00ff66;
-  --bg-crt: #030804;
+@theme {
+  /* CRT Color Palette */
+  --color-phosphor-green: #00ff66;
+  --color-bg-crt: #030804;
+
+  /* v0 Layout & UI Theme Palette */
+  --color-background: hsl(0 0% 4%);
+  --color-panel: hsl(0 0% 8%);
+  --color-border: hsl(0 0% 15%);
+  --color-muted: hsl(0 0% 60%);
+  --color-foreground: hsl(0 0% 98%);
 }
 
 body {
-  background-color: var(--bg-crt);
-  color: #00ff66;
+  background-color: var(--color-bg-crt);
+  color: var(--color-phosphor-green);
   font-family: 'Courier New', Courier, monospace;
 }
 
