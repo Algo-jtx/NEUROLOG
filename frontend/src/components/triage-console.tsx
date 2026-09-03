@@ -4,23 +4,21 @@ import React, { useState } from "react";
 import { processLogTriage } from "@/lib/api";
 import { TriageResponse } from "@/lib/types";
 
+type ConsoleState = "input" | "analyzing" | "result";
+
 export default function TriageConsole() {
   const [logInput, setLogInput] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [state, setState] = useState<ConsoleState>("input");
   const [result, setResult] = useState<TriageResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!logInput.trim()) {
-      setError("Please paste a log or stack trace before running analysis.");
-      return;
-    }
+    if (!logInput.trim()) return;
 
-    setLoading(true);
     setError(null);
-    setResult(null);
+    setState("analyzing");
 
     try {
       const data = await processLogTriage({
@@ -28,311 +26,256 @@ export default function TriageConsole() {
       });
 
       setResult(data);
+      setState("result");
     } catch (err: any) {
-      setError(err.message || "Unable to connect to the triage engine.");
-    } finally {
-      setLoading(false);
+      setError(err.message || "Unable to complete the diagnosis.");
+      setState("input");
     }
   };
 
-  const severityClass = (severity: string) => {
-    const value = severity.toLowerCase();
-
-    if (value.includes("critical") || value.includes("fatal")) {
-      return "border-red-500/50 bg-red-950/20 text-red-400";
-    }
-
-    if (value.includes("high")) {
-      return "border-orange-500/50 bg-orange-950/20 text-orange-400";
-    }
-
-    if (value.includes("medium") || value.includes("warning")) {
-      return "border-yellow-500/50 bg-yellow-950/20 text-yellow-400";
-    }
-
-    return "border-phosphor-green/40 bg-green-950/20 text-phosphor-green";
+  const resetConsole = () => {
+    setLogInput("");
+    setResult(null);
+    setError(null);
+    setState("input");
   };
+
+  const severity = result?.severity?.toLowerCase() || "";
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="neurolog-shell">
       {/* HEADER */}
-      <header className="border-b border-border pb-5">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="flex items-center gap-3">
-              <span className="text-phosphor-green text-sm">[AI]</span>
-
-              <h1 className="text-2xl font-bold tracking-wide text-phosphor-green glow-text-green">
-                NEURAL LOG
-              </h1>
-            </div>
-
-            <p className="mt-2 text-sm text-muted">
-              AI-powered runtime error analysis and resolution console.
-            </p>
+      <header className="neurolog-header">
+        <div>
+          <div className="brand-line">
+            <span className="brand-prefix">[AI]</span>
+            <h1>NEUROLOG</h1>
           </div>
 
-          <div className="flex items-center gap-2 border border-phosphor-green/30 bg-black/40 px-3 py-2 text-xs text-phosphor-green">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-phosphor-green" />
-            ENGINE ONLINE
-          </div>
+          <p className="brand-description">
+            Diagnostic intelligence for runtime failures.
+          </p>
+        </div>
+
+        <div className="engine-status">
+          <span className="status-dot" />
+          ENGINE ONLINE
         </div>
       </header>
 
-      {/* INPUT CONSOLE */}
-      <section className="border border-border bg-panel/80">
-        <div className="flex items-center justify-between border-b border-border px-4 py-3">
-          <div className="flex items-center gap-2 text-sm font-bold text-phosphor-green">
-            <span>&gt;_</span>
-            LOG INPUT
+      {/* INPUT STATE */}
+      {state === "input" && (
+        <section className="console-panel">
+          <div className="panel-heading">
+            <span className="prompt-symbol">&gt;_</span>
+            <span>LOG INPUT</span>
+
+            <span className="character-count">
+              {logInput.length} characters
+            </span>
           </div>
 
-          <span className="text-xs text-muted">
-            {logInput.length} characters
-          </span>
-        </div>
+          <form onSubmit={handleSubmit}>
+            <textarea
+              value={logInput}
+              onChange={(e) => setLogInput(e.target.value)}
+              placeholder={`Paste a runtime error, stack trace, or console log here...
 
-        <form onSubmit={handleSubmit}>
-          <textarea
-            value={logInput}
-            onChange={(e) => setLogInput(e.target.value)}
-            placeholder={`Paste your stack trace or runtime logs here...
+Neurolog will trace the failure, identify where it occurred,
+explain why it happened, and recommend what to do next.`}
+              spellCheck={false}
+              className="log-editor"
+            />
 
-Example:
-Traceback (most recent call last):
-  File "app.py", line 10, in <module>
-    result = 10 / 0
-ZeroDivisionError: division by zero`}
-            rows={12}
-            spellCheck={false}
-            className="w-full resize-y border-0 bg-black/60 p-4 font-mono text-sm leading-6 text-foreground placeholder:text-muted/40 focus:outline-none focus:ring-1 focus:ring-inset focus:ring-phosphor-green/50"
-          />
+            <div className="console-actions">
+              <span className="input-hint">
+                Submit a failure for diagnosis.
+              </span>
 
-          <div className="flex flex-col gap-3 border-t border-border p-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs text-muted">
-              Submit raw logs for AI-powered triage.
-            </p>
+              <button
+                type="submit"
+                disabled={!logInput.trim()}
+                className="primary-button"
+              >
+                [ DIAGNOSE ]
+              </button>
+            </div>
+          </form>
+
+          {error && (
+            <div className="error-panel">
+              <div className="error-title">! DIAGNOSIS FAILED</div>
+              <p>{error}</p>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* ANALYZING STATE */}
+      {state === "analyzing" && (
+        <section className="analysis-state">
+          <div className="analysis-header">
+            <span className="analysis-prompt">&gt;</span>
+            <span>NEUROLOG IS ANALYZING THE FAILURE...</span>
+          </div>
+
+          <div className="analysis-details">
+            <div>&gt; reading log stream</div>
+            <div>&gt; tracing failure location</div>
+            <div>&gt; identifying root cause</div>
+            <div>&gt; generating resolution steps</div>
+          </div>
+
+          <div className="loading-track">
+            <div className="loading-bar" />
+          </div>
+
+          <div className="analysis-footer">
+            <span>PROCESSING</span>
+            <span>PLEASE WAIT</span>
+          </div>
+        </section>
+      )}
+
+      {/* RESULT STATE */}
+      {state === "result" && result && (
+        <section className="diagnosis">
+
+          {/* RESULT HEADER */}
+          <div className="diagnosis-header">
+            <div>
+              <div className="eyebrow">DIAGNOSIS READY</div>
+
+              <h2>NEUROLOG FOUND THE FAILURE</h2>
+
+              <p>
+                The failure has been isolated and a recommended resolution
+                has been generated.
+              </p>
+            </div>
 
             <button
-              type="submit"
-              disabled={loading}
-              className="border border-phosphor-green bg-phosphor-green px-5 py-2.5 font-mono text-sm font-bold text-black transition-all hover:bg-transparent hover:text-phosphor-green disabled:cursor-not-allowed disabled:opacity-50"
+              type="button"
+              onClick={resetConsole}
+              className="secondary-button"
             >
-              {loading ? "[ ANALYZING... ]" : "[ RUN TRIAGE ]"}
+              [ ANALYZE ANOTHER ]
             </button>
           </div>
-        </form>
-      </section>
 
-      {/* ERROR */}
-      {error && (
-        <section className="border border-red-500/50 bg-red-950/20 p-4 text-sm text-red-400 glow-border-red">
-          <div className="mb-1 font-bold">! TRIAGE ENGINE ERROR</div>
-          <div>{error}</div>
-        </section>
-      )}
+          {/* PRIMARY DIAGNOSIS */}
+          <div className="diagnosis-summary">
+            <div className="summary-severity">
+              <span className="field-label">SEVERITY</span>
 
-      {/* LOADING */}
-      {loading && (
-        <section className="border border-phosphor-green/20 bg-panel/60 p-6">
-          <div className="font-mono text-sm text-phosphor-green">
-            <span className="animate-pulse">&gt; Neural Log is analyzing log stream...</span>
-          </div>
-
-          <div className="mt-4 h-1 overflow-hidden bg-black">
-            <div className="h-full w-1/2 animate-pulse bg-phosphor-green" />
-          </div>
-        </section>
-      )}
-
-      {/* RESULTS */}
-      {result && !loading && (
-        <section className="space-y-5">
-          {/* RESULT HEADER */}
-          <div className="flex flex-col gap-3 border-b border-border pb-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <div className="text-xs uppercase tracking-widest text-muted">
-                Analysis complete
-              </div>
-
-              <h2 className="mt-1 text-lg font-bold text-phosphor-green">
-                TRIAGE RESULT
-              </h2>
-            </div>
-
-            <div className="text-xs text-muted">
-              AI diagnostic response received
-            </div>
-          </div>
-
-          {/* SUMMARY */}
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="border border-border bg-panel p-4">
-              <div className="text-xs uppercase tracking-wider text-muted">
-                Severity
-              </div>
-
-              <div
-                className={`mt-3 inline-flex border px-3 py-1.5 text-sm font-bold uppercase ${severityClass(
-                  result.severity
-                )}`}
+              <span
+                className={`severity-badge ${
+                  severity === "critical"
+                    ? "severity-critical"
+                    : severity === "high"
+                    ? "severity-high"
+                    : "severity-normal"
+                }`}
               >
                 {result.severity}
-              </div>
-            </div>
-
-            <div className="border border-border bg-panel p-4">
-              <div className="text-xs uppercase tracking-wider text-muted">
-                Error Type
-              </div>
-
-              <div className="mt-3 break-words font-mono text-sm font-bold text-foreground">
-                {result.error_type}
-              </div>
-            </div>
-
-            <div className="border border-border bg-panel p-4">
-              <div className="text-xs uppercase tracking-wider text-muted">
-                AI Confidence
-              </div>
-
-              <div className="mt-3 font-mono text-sm font-bold text-phosphor-green">
-                {result.confidence}
-              </div>
-            </div>
-          </div>
-
-          {/* ERROR MESSAGE */}
-          <div className="border border-border bg-panel">
-            <div className="border-b border-border px-4 py-3 text-xs font-bold uppercase tracking-wider text-muted">
-              Error Message
-            </div>
-
-            <div className="p-4 font-mono text-sm text-red-300">
-              {result.error_message}
-            </div>
-          </div>
-
-          {/* ISOLATED FAILURE */}
-          <div className="border border-border bg-panel">
-            <div className="border-b border-border px-4 py-3 text-xs font-bold uppercase tracking-wider text-muted">
-              Isolated Failure
-            </div>
-
-            <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:gap-6">
-              <div>
-                <div className="text-xs text-muted">FILE</div>
-                <div className="mt-1 font-mono text-sm text-phosphor-green">
-                  {result.isolated_file}
-                </div>
-              </div>
-
-              <div className="hidden text-border sm:block">/</div>
-
-              <div>
-                <div className="text-xs text-muted">LINE</div>
-                <div className="mt-1 font-mono text-sm text-phosphor-green">
-                  {result.isolated_line}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* CODE SNIPPET */}
-          <div className="border border-border bg-black">
-            <div className="flex items-center justify-between border-b border-border px-4 py-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-muted">
-                Code Snippet
-              </span>
-
-              <span className="text-xs text-muted">
-                {result.isolated_file}:{result.isolated_line}
               </span>
             </div>
 
-            <div className="overflow-x-auto p-4">
-              <pre className="font-mono text-sm leading-7">
-                {result.code_snippet.map((line, index) => (
-                  <div key={index} className="flex">
-                    <span className="mr-4 w-6 select-none text-right text-muted/40">
-                      {index + 1}
-                    </span>
+            <div className="summary-main">
+              <span className="field-label">FAILURE</span>
+              <h3>{result.error_type}</h3>
+              <p>{result.error_message}</p>
+            </div>
 
-                    <code
-                      className={
-                        line.includes("result =")
-                          ? "text-red-300"
-                          : "text-foreground"
-                      }
-                    >
-                      {line}
-                    </code>
-                  </div>
-                ))}
-              </pre>
+            <div className="summary-confidence">
+              <span className="field-label">CONFIDENCE</span>
+              <strong>{result.confidence}</strong>
             </div>
           </div>
 
-          {/* ROOT CAUSE */}
-          <div className="border border-border bg-panel">
-            <div className="border-b border-border px-4 py-3 text-xs font-bold uppercase tracking-wider text-muted">
-              Root Cause
-            </div>
+          {/* FAILURE + RESOLUTION */}
+          <div className="diagnosis-grid">
 
-            <p className="p-4 text-sm leading-7 text-foreground">
-              {result.root_cause}
-            </p>
-          </div>
-
-          {/* PLAYBOOK */}
-          <div className="border border-border bg-panel">
-            <div className="border-b border-border px-4 py-3">
-              <div className="text-xs font-bold uppercase tracking-wider text-muted">
-                Resolution Playbook
+            {/* WHERE */}
+            <section className="diagnosis-card">
+              <div className="card-heading">
+                <span>01</span>
+                <h3>WHERE IT FAILED</h3>
               </div>
 
-              <div className="mt-1 text-xs text-muted/70">
-                AI-generated remediation steps
-              </div>
-            </div>
+              <div className="failure-location">
+                <div>
+                  <span className="field-label">FILE</span>
+                  <strong>{result.isolated_file}</strong>
+                </div>
 
-            <div className="divide-y divide-border">
-              {result.playbook_steps.map((step, index) => (
-                <div key={index} className="p-5">
-                  <div className="flex gap-4">
-                    <div className="flex h-7 min-w-7 items-center justify-center border border-phosphor-green/30 text-xs font-bold text-phosphor-green">
+                <div>
+                  <span className="field-label">LINE</span>
+                  <strong>{result.isolated_line}</strong>
+                </div>
+              </div>
+
+              <details className="technical-details">
+                <summary>VIEW RELEVANT CODE</summary>
+
+                <div className="code-block">
+                  {result.code_snippet.map((line, index) => (
+                    <div className="code-line" key={index}>
+                      <span className="line-number">{index + 1}</span>
+                      <code>{line}</code>
+                    </div>
+                  ))}
+                </div>
+              </details>
+            </section>
+
+            {/* HOW */}
+            <section className="diagnosis-card resolution-card">
+              <div className="card-heading">
+                <span>02</span>
+                <h3>HOW TO FIX IT</h3>
+              </div>
+
+              <div className="playbook">
+                {result.playbook_steps.map((step) => (
+                  <div className="playbook-step" key={step.step_number}>
+                    <div className="step-number">
                       {step.step_number}
                     </div>
 
-                    <div className="min-w-0 flex-1">
-                      <h3 className="font-bold text-phosphor-green">
-                        {step.title}
-                      </h3>
+                    <div className="step-content">
+                      <h4>{step.title}</h4>
 
-                      <div className="mt-3 overflow-x-auto border border-border bg-black p-3">
-                        <code className="font-mono text-sm text-green-300">
-                          $ {step.command}
-                        </code>
+                      <div className="command-block">
+                        <span>$</span>
+                        <code>{step.command}</code>
                       </div>
 
-                      <p className="mt-3 text-sm leading-6 text-muted">
-                        {step.description}
-                      </p>
+                      <p>{step.description}</p>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </section>
           </div>
-        </section>
-      )}
 
-      {/* EMPTY STATE */}
-      {!result && !loading && !error && (
-        <div className="py-8 text-center text-xs text-muted/60">
-          <span className="text-phosphor-green/50">&gt;</span>{" "}
-          Awaiting log stream for analysis...
-        </div>
+          {/* ROOT CAUSE */}
+          <section className="root-cause-card">
+            <div className="card-heading">
+              <span>03</span>
+              <h3>WHY IT FAILED</h3>
+            </div>
+
+            <p>{result.root_cause}</p>
+          </section>
+
+          {/* TECHNICAL DETAILS */}
+          <details className="full-log-details">
+            <summary>VIEW ORIGINAL ERROR</summary>
+
+            <pre>{result.error_message}</pre>
+          </details>
+        </section>
       )}
     </div>
   );
