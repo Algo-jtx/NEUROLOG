@@ -10,106 +10,161 @@ export default function DiagnosisView({
   onReset,
 }: DiagnosisViewProps) {
   return (
-    <section className="space-y-5">
-      <div className="flex items-center justify-between border-b border-border pb-4">
-        <div>
-          <p className="text-xs text-muted">DIAGNOSIS READY</p>
+    <section className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-5 border-b border-border pb-6">
+        <div className="space-y-2">
+          <p className="text-xs font-mono font-bold tracking-widest text-phosphor-green">
+            DIAGNOSIS COMPLETE
+          </p>
 
-          <h2 className="text-xl font-bold text-phosphor-green glow-text-green mt-1">
-            NEUROLOG FOUND THE FAILURE
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
+            NEUROLOG found the failure.
           </h2>
+
+          <p className="max-w-2xl text-sm leading-6 text-muted">
+            The agent traced the supplied runtime output to a specific failure
+            point and generated a resolution path.
+          </p>
         </div>
 
         <button
           type="button"
           onClick={onReset}
-          className="text-xs text-muted hover:text-phosphor-green transition-colors"
+          className="self-start sm:self-auto shrink-0 px-3 py-2 border border-border text-xs font-mono text-muted hover:text-phosphor-green hover:border-phosphor-green/40 transition-colors"
         >
           [ ANALYZE ANOTHER ]
         </button>
       </div>
 
-      <div className="border border-border bg-panel rounded-lg p-5 space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <p className="text-xs text-muted">SEVERITY</p>
-            <p className="font-bold text-phosphor-green mt-1">
-              {result.severity}
-            </p>
-          </div>
+      <section className="border border-border bg-panel rounded-lg overflow-hidden">
+        <div className="px-5 py-3 border-b border-border flex items-center justify-between gap-4">
+          <span className="text-xs font-mono font-bold tracking-wider text-phosphor-green">
+            01 / WHAT BROKE
+          </span>
 
-          <div>
-            <p className="text-xs text-muted">FAILURE</p>
-            <p className="font-bold text-foreground mt-1">
-              {result.error_type}
-            </p>
-          </div>
-
-          <div>
-            <p className="text-xs text-muted">CONFIDENCE</p>
-            <p className="font-bold text-phosphor-green mt-1">
-              {result.confidence}
-            </p>
-          </div>
+          <span className="text-[10px] font-mono text-muted uppercase">
+            {result.confidence} confidence
+          </span>
         </div>
 
-        <div className="border-t border-border pt-4">
-          <p className="text-xs text-muted">WHAT HAPPENED</p>
-          <p className="text-foreground mt-2">
-            {result.error_message}
+        <div className="p-5 md:p-6">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-5">
+            <div className="min-w-0">
+              <p className="text-2xl md:text-3xl font-bold tracking-tight text-foreground break-words">
+                {result.error_type}
+              </p>
+
+              <p className="mt-3 max-w-3xl text-sm md:text-base leading-6 text-muted">
+                {result.error_message}
+              </p>
+            </div>
+
+            <div className="shrink-0">
+              <p className="text-[10px] font-mono text-muted uppercase mb-2">
+                Severity
+              </p>
+
+              <span className="inline-flex px-3 py-1.5 border border-phosphor-green/30 bg-phosphor-green/5 rounded text-xs font-bold font-mono text-phosphor-green">
+                {result.severity}
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="border border-border bg-panel rounded-lg overflow-hidden">
+        <div className="px-5 py-3 border-b border-border">
+          <span className="text-xs font-mono font-bold tracking-wider text-phosphor-green">
+            02 / WHERE IT FAILED
+          </span>
+        </div>
+
+        <div className="p-5 md:p-6">
+          <div className="inline-flex items-center gap-1.5 px-3 py-2 bg-black border border-border font-mono text-sm">
+            <span className="text-foreground">
+              {result.isolated_file}
+            </span>
+
+            <span className="text-muted">:</span>
+
+            <span className="text-phosphor-green font-bold">
+              {result.isolated_line}
+            </span>
+          </div>
+
+          <p className="mt-3 text-xs text-muted">
+            Isolated failure location identified by the diagnostic agent.
           </p>
         </div>
-      </div>
+      </section>
 
-      <div className="border border-border bg-panel rounded-lg p-5">
-        <p className="text-xs text-muted">WHERE IT FAILED</p>
+      <section className="border border-phosphor-green/30 bg-panel rounded-lg overflow-hidden">
+        <div className="px-5 py-3 border-b border-phosphor-green/20 flex items-center justify-between gap-4">
+          <span className="text-xs font-mono font-bold tracking-wider text-phosphor-green">
+            03 / HOW TO FIX IT
+          </span>
 
-        <p className="text-foreground mt-2 font-bold">
-          {result.isolated_file}
-          <span className="text-muted"> : </span>
-          {result.isolated_line}
-        </p>
-      </div>
+          <span className="text-[10px] font-mono text-muted">
+            RESOLUTION PLAYBOOK
+          </span>
+        </div>
 
-      <div className="border border-border bg-panel rounded-lg p-5">
-        <p className="text-xs text-muted">WHY IT FAILED</p>
-
-        <p className="text-foreground mt-2">
-          {result.root_cause}
-        </p>
-      </div>
-
-      <div className="border border-border bg-panel rounded-lg p-5">
-        <p className="text-xs text-muted mb-3">CODE</p>
-
-        <pre className="overflow-x-auto text-sm text-foreground font-mono">
-          {result.code_snippet.join("\n")}
-        </pre>
-      </div>
-
-      <div className="border border-phosphor-green/30 bg-panel rounded-lg p-5">
-        <p className="text-xs text-phosphor-green font-bold">
-          HOW TO FIX IT
-        </p>
-
-        <div className="mt-4 space-y-4">
+        <div className="p-5 md:p-6 space-y-6">
           {result.playbook_steps.map((step) => (
-            <div key={step.step_number}>
-              <p className="font-bold text-foreground">
-                {step.step_number}. {step.title}
-              </p>
+            <div key={step.step_number} className="space-y-3">
+              <div className="flex items-start gap-3">
+                <span className="shrink-0 text-xs font-mono font-bold text-phosphor-green pt-0.5">
+                  {step.step_number.padStart(2, "0")}
+                </span>
 
-              <pre className="mt-2 p-3 bg-black border border-border overflow-x-auto text-sm text-phosphor-green font-mono">
+                <div>
+                  <p className="font-bold text-foreground">
+                    {step.title}
+                  </p>
+
+                  <p className="mt-1 text-xs text-muted">
+                    {step.description}
+                  </p>
+                </div>
+              </div>
+
+              <pre className="p-4 md:ml-8 bg-black border border-border overflow-x-auto text-sm text-phosphor-green font-mono leading-6">
                 {step.command}
               </pre>
-
-              <p className="text-sm text-muted mt-2">
-                {step.description}
-              </p>
             </div>
           ))}
         </div>
-      </div>
+      </section>
+
+      <section className="border border-border bg-panel rounded-lg overflow-hidden">
+        <div className="px-5 py-3 border-b border-border">
+          <span className="text-xs font-mono font-bold tracking-wider text-phosphor-green">
+            04 / WHY IT FAILED
+          </span>
+        </div>
+
+        <div className="p-5 md:p-6">
+          <p className="max-w-4xl text-sm md:text-base leading-7 text-foreground">
+            {result.root_cause}
+          </p>
+        </div>
+      </section>
+
+      <section className="border border-border bg-panel rounded-lg overflow-hidden">
+        <div className="px-5 py-3 border-b border-border flex items-center justify-between gap-4">
+          <span className="text-xs font-mono font-bold tracking-wider text-phosphor-green">
+            05 / EVIDENCE
+          </span>
+
+          <span className="text-[10px] font-mono text-muted">
+            ISOLATED CODE
+          </span>
+        </div>
+
+        <pre className="p-5 md:p-6 overflow-x-auto text-sm text-foreground font-mono leading-6">
+          {result.code_snippet.join("\n")}
+        </pre>
+      </section>
     </section>
   );
 }

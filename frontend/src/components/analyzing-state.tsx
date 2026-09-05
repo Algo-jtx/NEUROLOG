@@ -1,56 +1,104 @@
 "use client";
 
-import React from "react";
+import { useEffect, useState } from "react";
 
-interface LogInputProps {
-  value: string;
-  loading: boolean;
-  onChange: (value: string) => void;
-  onSubmit: (event: React.FormEvent) => void;
-}
+const steps = [
+  "Inspecting runtime output",
+  "Locating failure",
+  "Building diagnosis",
+  "Preparing resolution",
+];
 
-export default function LogInput({
-  value,
-  loading,
-  onChange,
-  onSubmit,
-}: LogInputProps) {
+export default function AnalyzingState() {
+  const [activeStep, setActiveStep] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveStep((current) => Math.min(current + 1, steps.length - 1));
+    }, 450);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <label className="text-sm font-bold text-phosphor-green">
-            &gt;_ LOG INPUT
-          </label>
+    <section className="border border-border bg-panel rounded-lg overflow-hidden">
+      <div className="px-5 py-3 border-b border-border">
+        <span className="text-xs font-mono font-bold tracking-wider text-phosphor-green">
+          ANALYSIS IN PROGRESS
+        </span>
+      </div>
 
-          <span className="text-xs text-muted">
-            {value.length} characters
-          </span>
+      <div className="p-6 md:p-8">
+        <div className="space-y-7">
+          <div>
+            <p className="text-xl md:text-2xl font-bold text-foreground">
+              NEUROLOG is tracing the failure...
+            </p>
+
+            <p className="mt-2 text-sm text-muted">
+              Inspecting the supplied runtime output and building a diagnosis.
+            </p>
+          </div>
+
+          <div className="space-y-4 font-mono text-sm">
+            {steps.map((step, index) => {
+              const isActive = index === activeStep;
+              const isComplete = index < activeStep;
+
+              return (
+                <div
+                  key={step}
+                  className="flex items-center gap-3 transition-opacity duration-300"
+                >
+                  <span
+                    className={
+                      isActive || isComplete
+                        ? "text-phosphor-green"
+                        : "text-muted"
+                    }
+                  >
+                    [{String(index + 1).padStart(2, "0")}]
+                  </span>
+
+                  <span
+                    className={
+                      isActive
+                        ? "text-foreground"
+                        : isComplete
+                        ? "text-muted"
+                        : "text-muted/60"
+                    }
+                  >
+                    {step}
+                  </span>
+
+                  {isActive && (
+                    <span className="ml-auto text-xs text-phosphor-green animate-pulse">
+                      ACTIVE
+                    </span>
+                  )}
+
+                  {isComplete && (
+                    <span className="ml-auto text-xs text-phosphor-green">
+                      DONE
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="pt-2">
+            <div className="h-px w-full bg-border overflow-hidden">
+              <div className="h-full w-1/3 bg-phosphor-green animate-pulse" />
+            </div>
+
+            <p className="mt-3 text-[10px] font-mono text-muted">
+              AGENT STATUS // TRACING
+            </p>
+          </div>
         </div>
-
-        <textarea
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          placeholder="Paste a runtime error, stack trace, or console log here..."
-          rows={10}
-          className="w-full bg-panel border border-border rounded-lg p-4 font-mono text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:border-phosphor-green transition-colors resize-none"
-        />
       </div>
-
-      <div className="flex items-center justify-between gap-4">
-        <p className="text-xs text-muted">
-          NEUROLOG will trace the failure, identify where it occurred,
-          explain why, and recommend what to do next.
-        </p>
-
-        <button
-          type="submit"
-          disabled={loading || !value.trim()}
-          className="shrink-0 px-5 py-2.5 bg-phosphor-green text-black font-bold text-sm rounded-md hover:opacity-90 disabled:opacity-50 transition-opacity"
-        >
-          {loading ? "Analyzing..." : "Diagnose"}
-        </button>
-      </div>
-    </form>
+    </section>
   );
 }

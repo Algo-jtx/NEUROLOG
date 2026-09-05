@@ -236,7 +236,7 @@ body::before {
   border: 0;
   outline: 0;
 
-  background: #020403;
+  background: #040705;
 
   color: var(--color-foreground);
 
@@ -252,7 +252,7 @@ body::before {
 }
 
 .log-editor::placeholder {
-  color: #4d5a52;
+  color: #65736a;
 }
 
 .log-editor:focus {

@@ -11,6 +11,8 @@ import DiagnosisView from "@/components/diagnosis-view";
 
 type ConsoleState = "ready" | "analyzing" | "diagnosis";
 
+const MIN_ANALYSIS_TIME = 1800;
+
 export default function TriageConsole() {
   const [logInput, setLogInput] = useState("");
   const [status, setStatus] = useState<ConsoleState>("ready");
@@ -25,14 +27,22 @@ export default function TriageConsole() {
     setStatus("analyzing");
     setError(null);
 
+    const analysisDelay = new Promise<void>((resolve) => {
+      setTimeout(resolve, MIN_ANALYSIS_TIME);
+    });
+
     try {
       const data = await processLogTriage({
         raw_log: logInput,
       });
 
+      await analysisDelay;
+
       setResult(data);
       setStatus("diagnosis");
     } catch (err: any) {
+      await analysisDelay;
+
       setError(err.message || "Failed to analyze the log.");
       setStatus("ready");
     }
@@ -46,7 +56,7 @@ export default function TriageConsole() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-6 md:p-8 space-y-8">
+    <div className="max-w-6xl mx-auto px-5 py-8 md:px-8 md:py-10 space-y-10">
       <NeuroHeader />
 
       {status === "ready" && (
