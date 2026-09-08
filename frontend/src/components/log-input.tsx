@@ -16,19 +16,20 @@ export default function LogInput({
   onSubmit,
 }: LogInputProps) {
   return (
-    <section className="space-y-5">
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <p className="text-xs font-mono text-phosphor-green">
+    <section className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div className="space-y-2">
+          <p className="text-xs font-mono font-bold tracking-widest text-phosphor-green crt-shimmer">
             INPUT STREAM
           </p>
 
-          <h2 className="mt-1 text-xl md:text-2xl font-bold text-foreground">
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">
             Feed the failure to NEUROLOG.
           </h2>
 
-          <p className="mt-1 text-sm text-muted">
-            Paste the runtime output you want the agent to investigate.
+          <p className="max-w-2xl text-sm md:text-base font-medium leading-6 text-foreground/75">
+            Drop the runtime output below. NEUROLOG will isolate the break,
+            trace its source, and surface the next move.
           </p>
         </div>
 
@@ -37,14 +38,14 @@ export default function LogInput({
         </span>
       </div>
 
-      <form onSubmit={onSubmit} className="space-y-4">
+      <form onSubmit={onSubmit} className="space-y-5">
         <div className="relative border border-border bg-panel rounded-lg overflow-hidden focus-within:border-phosphor-green/60 transition-colors">
           <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-black/30">
-            <span className="text-xs font-mono text-muted">
+            <span className="text-xs font-mono font-bold text-muted">
               &gt;_ RUNTIME LOG
             </span>
 
-            <span className="text-[10px] font-mono text-muted/60">
+            <span className="text-[10px] font-mono text-muted/70">
               STDIN
             </span>
           </div>
@@ -61,20 +62,20 @@ Traceback (most recent call last):
 ZeroDivisionError: division by zero`}
             rows={12}
             spellCheck={false}
-            className="w-full bg-transparent p-5 font-mono text-sm leading-6 text-foreground placeholder:text-muted/35 focus:outline-none resize-none"
+            className="log-editor"
           />
 
           <div className="px-4 py-2 border-t border-border bg-black/20">
-            <span className="text-[10px] font-mono text-muted/60">
+            <span className="text-[10px] font-mono font-bold tracking-wider text-muted/70">
               READY FOR DIAGNOSIS
             </span>
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <p className="max-w-xl text-xs leading-5 text-muted">
-            NEUROLOG will trace the failure, isolate where it occurred,
-            explain the root cause, and build a resolution playbook.
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+          <p className="max-w-2xl text-sm font-medium leading-6 text-foreground/70">
+            Runtime signal in. Failure path out. NEUROLOG turns raw output
+            into a clear diagnosis and an actionable resolution path.
           </p>
 
           <button
@@ -82,7 +83,7 @@ ZeroDivisionError: division by zero`}
             disabled={loading || !value.trim()}
             className="shrink-0 px-6 py-3 bg-phosphor-green text-black font-bold text-sm rounded-md hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity"
           >
-            {loading ? "ANALYZING..." : "DIAGNOSE FAILURE"}
+            DIAGNOSE FAILURE
           </button>
         </div>
       </form>

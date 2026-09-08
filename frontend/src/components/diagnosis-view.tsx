@@ -93,7 +93,7 @@ export default function DiagnosisView({
           </div>
 
           <p className="mt-3 text-xs text-muted">
-            Isolated failure location identified by the diagnostic agent.
+            Failure point isolated from the supplied runtime evidence.
           </p>
         </div>
       </section>
@@ -105,7 +105,7 @@ export default function DiagnosisView({
           </span>
 
           <span className="text-[10px] font-mono text-muted">
-            RESOLUTION PLAYBOOK
+            NEXT ACTIONS
           </span>
         </div>
 
@@ -157,7 +157,7 @@ export default function DiagnosisView({
           </span>
 
           <span className="text-[10px] font-mono text-muted">
-            ISOLATED CODE
+            SUPPORTING EVIDENCE
           </span>
         </div>
 
