@@ -3,11 +3,7 @@ export default function NeuroHeader() {
     <header className="border-b border-border pb-6">
       <div className="flex items-start justify-between gap-6">
         <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-mono font-bold tracking-wider text-phosphor-green">
-              [AI]
-            </span>
-
+          <div className="flex items-center">
             <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-phosphor-green glow-text-green">
               NEUROLOG
             </h1>
